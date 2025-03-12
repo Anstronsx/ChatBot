@@ -1,66 +1,68 @@
-#Instalamos flask en nuestro entorno venv 
-from flask import Flask, request, jsonify, render_template 
+import os
+import json
+from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
+app = Flask(__name__)
 
-app = Flask (__name__)
+# Configuración de la base de datos (PostgreSQL en producción, SQLite en desarrollo)
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///metapython.db")
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://")  # Para compatibilidad con SQLAlchemy
 
-#Configuración de la base de datos sqlite
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///metapython.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-#Instanciamos la clase SQLAlchemy
+app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+# Instanciamos la base de datos
 db = SQLAlchemy(app)
 
-#Definimos la clase modelo
+# Definimos la clase modelo
 class Log(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     fecha_y_hora = db.Column(db.DateTime, default=datetime.utcnow)
-    texto =db.Column(db.TEXT)
+    texto = db.Column(db.Text, nullable=False)  # Se asegura de que no sea NULL
 
-
-#Crear una tabla si no existe
+# Crear la tabla si no existe
 with app.app_context():
     db.create_all()
 
-#Funcion para ordenar los registros por fecha y hora
+# Función para ordenar registros por fecha y hora
 def ordenar_por_fecha_y_hora(registros):
     return sorted(registros, key=lambda x: x.fecha_y_hora or datetime.min, reverse=True)
 
-
 @app.route('/')
 def index():
-
-    #Obtener todos los registros de la base de datos
+    # Obtener todos los registros de la base de datos
     registros = Log.query.all()
-    #Ordenar los registros por fecha y hora
     registros_ordenados = ordenar_por_fecha_y_hora(registros)
-    return render_template('index.html',registros=registros_ordenados)
+    return render_template('index.html', registros=registros_ordenados)
 
 mensajes_log = []
 
-#Funcion para agregar mensajes y guardar en la base de datos
+# Función para agregar mensajes y guardar en la base de datos
 def agregar_mensajes_log(texto):
     mensajes_log.append(texto)
 
-    #Guardar el mensaje en la base de datos
+    # Convertir texto a string si es JSON
+    if isinstance(texto, dict):
+        texto = json.dumps(texto)
+
     nuevo_registro = Log(texto=texto)
     db.session.add(nuevo_registro)
     db.session.commit()
 
-#"Token de verificación para la configuracion"
+# Token de verificación para la configuración
 TOKEN_OMICTECH = "OMICTECH"
 
-#Creacion del wbhook
-
-@app.route('/webhook', methods=['GET','POST'])
+# Creación del webhook
+@app.route('/webhook', methods=['GET', 'POST'])
 def webhook():
-    #Importar metodo de META
-    if request.method== 'GET':
-        challenge  = verificar_token(request)
+    if request.method == 'GET':
+        challenge = verificar_token(request)
         return challenge
     elif request.method == 'POST':
-        response = recibir_mensajes (request)
+        response = recibir_mensajes(request)
         return response
 
 def verificar_token(req):
@@ -71,15 +73,15 @@ def verificar_token(req):
         return challenge
     else:
         return jsonify({'ERROR': 'TOKEN INVALIDO'}), 401
-    
 
 def recibir_mensajes(req):
-    req = request.get_json()
-
-    agregar_mensajes_log(req)
+    data = req.get_json()
+    
+    if data:
+        agregar_mensajes_log(data)
+    
     return jsonify({'message': 'EVENT_RECEIVED'})
 
-
-
-if __name__== '__main__':
-    app.run(host='0.0.0.0',port=80, debug=True)
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))  # Render asigna un puerto dinámico
+    app.run(host='0.0.0.0', port=port, debug=True)
