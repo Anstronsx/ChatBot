@@ -60,11 +60,9 @@ TOKEN_OMICTECH = "OMICTECH"
 @app.route('/webhook', methods=['GET', 'POST'])
 def webhook():
     if request.method == 'GET':
-        challenge = verificar_token(request)
-        return challenge
+        return verificar_token(request)
     elif request.method == 'POST':
-        response = recibir_mensajes(request)
-        return response
+        return recibir_mensajes(request)
 
 def verificar_token(req):
     token = req.args.get('hub.verify_token')
@@ -76,40 +74,43 @@ def verificar_token(req):
         return jsonify({'ERROR': 'TOKEN INVALIDO'}), 401
 
 def recibir_mensajes(req):
-
-    
     try:
-        req = request.get_json()
-        entry =req['entry'][0]
-        changes = entry['changes'][0]
-        value = changes['value']
-        objeto_mensaje = value ['messages']
+        data = req.get_json()
+        
+        if not data or "entry" not in data:
+            return jsonify({'message': 'INVALID_REQUEST'}), 400
+        
+        entry = data['entry'][0]
+        changes = entry.get('changes', [{}])[0]
+        value = changes.get('value', {})
+        objeto_mensaje = value.get('messages', [])
 
         if objeto_mensaje:
             messages = objeto_mensaje[0]
-
             if "type" in messages:
                 tipo = messages["type"]
 
                 if tipo == "interactive":
-                    return 0
-                
+                    return jsonify({'message': 'INTERACTIVE_MESSAGE_IGNORED'})
+
                 if "text" in messages:
-                    text = messages["text"] ["body"]
+                    text = messages["text"]["body"]
                     numero = messages["from"]
-                    enviar_mensajes_whatsapp(text, numero)
                     
+                    enviar_mensajes_whatsapp(text, numero)
 
         return jsonify({'message': 'EVENT_RECEIVED'})
+
     except Exception as e:
+        agregar_mensajes_log(f"ERROR: {str(e)}")
         return jsonify({'message': 'EVENT_RECEIVED'})
 
-#Responder mensajes en Whatsapp
-def enviar_mensajes_whatsapp (texto, number):
+# Responder mensajes en WhatsApp
+def enviar_mensajes_whatsapp(texto, number):
     texto = texto.lower()
-
-    if "Hola" in texto:
-        data={
+    
+    if "hola" in texto:
+        mensaje = {
             "messaging_product": "whatsapp",    
             "recipient_type": "individual",
             "to": number,
@@ -117,43 +118,43 @@ def enviar_mensajes_whatsapp (texto, number):
             "text": {
                 "preview_url": False,
                 "body": "Hola, ¿Cómo estás? Bienvenido, soy Laura tu asistente."
-                }
             }
-
-
+        }
     else:
-        data={
+        mensaje = {
             "messaging_product": "whatsapp",    
             "recipient_type": "individual",
             "to": number,
             "type": "text",
             "text": {
                 "preview_url": False,
-                "body": "Hola, visita nuestra web www.omictechglobal.com para mas información. \n 1. Escuelas especializadas \n 2. Asesorias de tesis \n 3. Analisis de datos \n 4. Clases Particulares"
-                }
+                "body": "Hola, visita nuestra web www.omictechglobal.com para más información. \n1. Escuelas especializadas \n2. Asesorías de tesis \n3. Análisis de datos \n4. Clases Particulares"
             }
-        #Convetir el diccionario a formato JSON
-        data=json.dumps(data)
-
-
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer EAA4tpFA6ORkBO0opGrm2sZBrUCwKf0hn5glFEZAMLyxAiyNSesBHeKBEedSGGR01OOJKPSaLskC6zf7887PumZAUFTMZBpkx29eBKodtjRUoSMyAZA7hF0vfyuxRvHopjZAck74ls7UkeSyBZACPtlNt4oNqErgeQqpaaeR2tjIAoJI6DdtL3hZAG7LzdSjJZAoWMUeaJs1iuk1idoAghjA9KcC3ZAYjii'
-
         }
 
-        connection = http.client.HTTPConnection("graph.facebook.com")
+    # Convertir el diccionario a formato JSON
+    data = json.dumps(mensaje)
 
-        try:
-            connection.request("POST", "/v22.0/567813309755555/messages", data, headers)
-            response = connection.getresponse()
-            print(response.status, response.reason)
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer EAA4tpFA6ORkBO0opGrm2sZBrUCwKf0hn5glFEZAMLyxAiyNSesBHeKBEedSGGR01OOJKPSaLskC6zf7887PumZAUFTMZBpkx29eBKodtjRUoSMyAZA7hF0vfyuxRvHopjZAck74ls7UkeSyBZACPtlNt4oNqErgeQqpaaeR2tjIAoJI6DdtL3hZAG7LzdSjJZAoWMUeaJs1iuk1idoAghjA9KcC3ZAYjii'
+    }
 
-        except Exception as e:
-            agregar_mensajes_log(json.dumps(e))
+    connection = http.client.HTTPSConnection("graph.facebook.com")
 
-        finally: 
-            connection.close()
+    try:
+        connection.request("POST", "/v22.0/567813309755555/messages", data, headers)
+        response = connection.getresponse()
+        print(response.status, response.reason)
+
+        if response.status != 200:
+            agregar_mensajes_log(f"ERROR WhatsApp: {response.status} {response.reason}")
+
+    except Exception as e:
+        agregar_mensajes_log(f"ERROR en conexión: {str(e)}")
+
+    finally:
+        connection.close()
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))  # Render asigna un puerto dinámico
