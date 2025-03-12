@@ -75,12 +75,26 @@ def verificar_token(req):
         return jsonify({'ERROR': 'TOKEN INVALIDO'}), 401
 
 def recibir_mensajes(req):
-    data = req.get_json()
+
     
-    if data:
-        agregar_mensajes_log(data)
+    try:
+        req = request.get_json()
+        entry =req['entry'][0]
+        changes = entry['changes'][0]
+        value = changes['value']
+        objeto_mensaje = value ['messages']
+
+        agregar_mensajes_log(json.dumps(objeto_mensaje))
+
+
+
+
+        return jsonify({'message': 'EVENT_RECEIVED'})
+    except Exception as e:
+        return jsonify({'message': 'EVENT_RECEIVED'})
+
     
-    return jsonify({'message': 'EVENT_RECEIVED'})
+    
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))  # Render asigna un puerto dinámico

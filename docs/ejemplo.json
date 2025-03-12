@@ -1,0 +1,39 @@
+{
+    "object": "whatsapp_business_account",
+    "entry": [
+        {
+            "id": "613707218152905",
+            "changes": [
+                {
+                    "value": {
+                        "messaging_product": "whatsapp",
+                        "metadata": {
+                            "display_phone_number": "15556319615",
+                            "phone_number_id": "567813309755555"
+                        },
+                        "contacts": [
+                            {
+                                "profile": {
+                                    "name": "OmicTech"
+                                },
+                                "wa_id": "593962342144"
+                            }
+                        ],
+                        "messages": [
+                            {
+                                "from": "593962342144",
+                                "id": "wamid.HBgMNTkzOTYyMzQyMTQ0FQIAEhggMzgwMkRDN0E3ODdERTMxRUZGMEQwNkU3NTAzMzc1MjIA",
+                                "timestamp": "1741813227",
+                                "text": {
+                                    "body": "Te extra\u00f1o"
+                                },
+                                "type": "text"
+                            }
+                        ]
+                    },
+                    "field": "messages"
+                }
+            ]
+        }
+    ]
+}
