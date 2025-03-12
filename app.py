@@ -3,6 +3,7 @@ import json
 from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+import http.client
 
 app = Flask(__name__)
 
@@ -96,16 +97,63 @@ def recibir_mensajes(req):
                 if "text" in messages:
                     text = messages["text"] ["body"]
                     numero = messages["from"]
-                    agregar_mensajes_log(json.dumps(text))
-                    agregar_mensajes_log(json.dumps(numero))
+                    enviar_mensajes_whatsapp(text, numero)
                     
 
         return jsonify({'message': 'EVENT_RECEIVED'})
     except Exception as e:
         return jsonify({'message': 'EVENT_RECEIVED'})
 
-    
-    
+#Responder mensajes en Whatsapp
+def enviar_mensajes_whatsapp (texto, number):
+    texto = texto.lower()
+
+    if "Hola" in texto:
+        data={
+            "messaging_product": "whatsapp",    
+            "recipient_type": "individual",
+            "to": number,
+            "type": "text",
+            "text": {
+                "preview_url": False,
+                "body": "Hola, ¿Cómo estás? Bienvenido, soy Laura tu asistente."
+                }
+            }
+
+
+    else:
+        data={
+            "messaging_product": "whatsapp",    
+            "recipient_type": "individual",
+            "to": number,
+            "type": "text",
+            "text": {
+                "preview_url": False,
+                "body": "Hola, visita nuestra web www.omictechglobal.com para mas información. \n 1. Escuelas especializadas \n 2. Asesorias de tesis \n 3. Analisis de datos \n 4. Clases Particulares"
+                }
+            }
+        #Convetir el diccionario a formato JSON
+        data=json.dumps(data)
+
+
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer EAA4tpFA6ORkBO0opGrm2sZBrUCwKf0hn5glFEZAMLyxAiyNSesBHeKBEedSGGR01OOJKPSaLskC6zf7887PumZAUFTMZBpkx29eBKodtjRUoSMyAZA7hF0vfyuxRvHopjZAck74ls7UkeSyBZACPtlNt4oNqErgeQqpaaeR2tjIAoJI6DdtL3hZAG7LzdSjJZAoWMUeaJs1iuk1idoAghjA9KcC3ZAYjii'
+
+        }
+
+        connection = http.client.HTTPConnection("graph.facebook.com")
+
+        try:
+            connection.request("POST", "/v22.0/567813309755555/messages", data, headers)
+            response = connection.getresponse()
+            print(response.status, response.reason)
+
+        except Exception as e:
+            agregar_mensajes_log(json.dumps(e))
+
+        finally: 
+            connection.close()
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))  # Render asigna un puerto dinámico
