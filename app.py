@@ -73,7 +73,7 @@ def recibir_mensajes(req):
             if "type" in messages:
                 tipo = messages["type"]
 
-                #Guardar log tipo en la Base de datos osea en la hoja de rutas
+                # Guardar log tipo en la Base de datos
                 agregar_mensajes_log(json.dumps(tipo))
 
                 if tipo == "interactive":
@@ -85,12 +85,9 @@ def recibir_mensajes(req):
                     
                     enviar_mensajes_whatsapp(text, numero)
 
-                    #Guardar mensaje 
+                    # Guardar mensaje 
                     agregar_mensajes_log(json.dumps(messages))
                 
-
-            
-
         return jsonify({'message': 'EVENT_RECEIVED'})
     except Exception as e:
         agregar_mensajes_log(f"ERROR: {str(e)}")
@@ -116,8 +113,8 @@ def enviar_mensajes_whatsapp(texto, number):
         data["text"]["body"] = "Ofrecemos asesorías en tesis, metagenómica y procesos de producción."
     elif "4" in texto:
         data["text"]["body"] = "Te ofrecemos una gama de profesores altamente capacitados"
-    elif "boton" in text:
-        data {
+    elif "boton" in texto:  # Cambiado de 'text' a 'texto'
+        data = {  # Añadido el operador de asignación '='
             "messaging_product": "whatsapp",
             "recipient_type": "individual",
             "to": number,
@@ -134,37 +131,29 @@ def enviar_mensajes_whatsapp(texto, number):
                     "buttons": [
                         {
                             "type": "reply",
-                            "reply":{
+                            "reply": {
                                 "id": "btnsi",
                                 "title": "Si",
                             }
-
                         },
-
                         {
                             "type": "reply",
-                            "reply":{
+                            "reply": {
                                 "id": "btnno",
                                 "title": "No",
                             }
-
                         },
                         {
                             "type": "reply",
-                            "reply":{
+                            "reply": {
                                 "id": "btntalvez",
                                 "title": "Talvez",
                             }
-
-                        },
+                        }
                     ]
-
                 }
-
             }
-
         }
-
     elif "3" in texto:
         data = {
             "messaging_product": "whatsapp",
@@ -195,4 +184,4 @@ def enviar_mensajes_whatsapp(texto, number):
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(host='0.0.0.0', port=port)  # Removido debug=True para producción
