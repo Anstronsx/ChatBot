@@ -137,13 +137,13 @@ def enviar_mensajes_whatsapp(texto, number):
 
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer EAA4tpFA6ORkBO0opGrm2sZBrUCwKf0hn5glFEZAMLyxAiyNSesBHeKBEedSGGR01OOJKPSaLskC6zf7887PumZAUFTMZBpkx29eBKodtjRUoSMyAZA7hF0vfyuxRvHopjZAck74ls7UkeSyBZACPtlNt4oNqErgeQqpaaeR2tjIAoJI6DdtL3hZAG7LzdSjJZAoWMUeaJs1iuk1idoAghjA9KcC3ZAYjii'
+        'Authorization': 'Bearer EAA4tpFA6ORkBOyKtGNCuSvovZBe7G8O1JO8TqamPHSqiZBdFsZC2CK5P4gECKONLZC3WV5sr1HC467VzVtXkLw9LNAOmMBWQ8nyS0W0TuRVSUpvmiqXlKNc4ZBcVJJiiGSd1xM8cdpbtanXLoqhvRT8dxUc3BZCEokfCwCjNd2vuvBKskXT5fDUOlr7hFEtzERpkeayyENSLgAt2ysbxiUjhAT40MZD'
     }
 
     connection = http.client.HTTPSConnection("graph.facebook.com")
 
     try:
-        connection.request("POST", "/v22.0/567813309755555/messages", data, headers)
+        connection.request("POST", "v22.0/567813309755555/messages", data, headers)
         response = connection.getresponse()
         print(response.status, response.reason)
 
