@@ -72,13 +72,24 @@ def recibir_mensajes(req):
             messages = objeto_mensaje[0]
             if "type" in messages:
                 tipo = messages["type"]
+
+                #Guardar log tipo en la Base de datos osea en la hoja de rutas
+                agregar_mensajes_log(json.dumps(tipo))
+
                 if tipo == "interactive":
                     return jsonify({'message': 'INTERACTIVE_MESSAGE_IGNORED'})
                 
                 if "text" in messages:
                     text = messages["text"]["body"].lower()
-                    numero = messages["from"]
+                    numero = messages["from"] 
+                    
                     enviar_mensajes_whatsapp(text, numero)
+
+                    #Guardar mensaje 
+                    agregar_mensajes_log(json.dumps(messages))
+                
+
+            
 
         return jsonify({'message': 'EVENT_RECEIVED'})
     except Exception as e:
@@ -105,6 +116,55 @@ def enviar_mensajes_whatsapp(texto, number):
         data["text"]["body"] = "Ofrecemos asesorías en tesis, metagenómica y procesos de producción."
     elif "4" in texto:
         data["text"]["body"] = "Te ofrecemos una gama de profesores altamente capacitados"
+    elif "boton" in text:
+        data {
+            "messaging_product": "whatsapp",
+            "recipient_type": "individual",
+            "to": number,
+            "type": "interactive",
+            "interactive": {
+                "type": "button",
+                "body": {
+                    "text": "¿Confirmas tu registro?",
+                },
+                "footer": {
+                    "text": "¿Selecciona una de las opciones?"    
+                },
+                "action": {
+                    "buttons": [
+                        {
+                            "type": "reply",
+                            "reply":{
+                                "id": "btnsi",
+                                "title": "Si",
+                            }
+
+                        },
+
+                        {
+                            "type": "reply",
+                            "reply":{
+                                "id": "btnno",
+                                "title": "No",
+                            }
+
+                        },
+                        {
+                            "type": "reply",
+                            "reply":{
+                                "id": "btntalvez",
+                                "title": "Talvez",
+                            }
+
+                        },
+                    ]
+
+                }
+
+            }
+
+        }
+
     elif "3" in texto:
         data = {
             "messaging_product": "whatsapp",
