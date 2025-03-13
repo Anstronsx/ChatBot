@@ -103,6 +103,8 @@ def enviar_mensajes_whatsapp(texto, number):
         data["text"]["body"] = "Tenemos diferentes Escuelas: Automatización, Acuicultura de Precisión, Agricultura de Precisión."
     elif "2" in texto:
         data["text"]["body"] = "Ofrecemos asesorías en tesis, metagenómica y procesos de producción."
+    elif "4" in texto:
+        data["text"]["body"] = "Te ofrecemos una gama de profesores altamente capacitados"
     elif "3" in texto:
         data = {
             "messaging_product": "whatsapp",
