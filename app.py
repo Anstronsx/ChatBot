@@ -120,6 +120,42 @@ def enviar_mensajes_whatsapp(texto, number):
                 "body": "Hola, ¿Cómo estás? Bienvenido, soy Laura tu asistente."
             }
         }
+    elif "1" in texto:
+        data = {
+            "messaging_product": "whatsapp",    
+            "recipient_type": "individual",
+            "to": number,
+            "type": "text",
+            "text": {
+                "preview_url": False,
+                "body": "Tenemos diferentes Escuelas, Automatización, Acuicultura de Precision, Agricultura de Precisión"
+            }
+        }
+
+    elif "2" in texto:
+        data = {
+            "messaging_product": "whatsapp",    
+            "recipient_type": "individual",
+            "to": number,
+            "type": "text",
+            "text": {
+                "preview_url": False,
+                "body": "Tenemos Asesorias de tesis, Metagenomica, Procesos de Producción"
+            }
+        }
+    
+    elif "3" in texto:
+        data = {
+            "messaging_product": "whatsapp",
+            "recipient_type": "individual",
+            "to": number,
+            "type": "document",
+            "document": {
+                "link": "https://www.turnerlibros.com/wp-content/uploads/2021/02/ejemplo.pdf",
+                "caption": "Este es nuestro catalogo de cursos #001"
+                }
+            }
+
     else:
         mensaje = {
             "messaging_product": "whatsapp",    
@@ -131,6 +167,8 @@ def enviar_mensajes_whatsapp(texto, number):
                 "body": "Hola, visita nuestra web www.omictechglobal.com para más información. \n1. Escuelas especializadas \n2. Asesorías de tesis \n3. Análisis de datos \n4. Clases Particulares"
             }
         }
+        
+
 
     # Convertir el diccionario a formato JSON
     data = json.dumps(mensaje)
