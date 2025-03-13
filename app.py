@@ -86,7 +86,7 @@ def recibir_mensajes(req):
         return jsonify({'message': 'EVENT_RECEIVED'})
 
 def enviar_mensajes_whatsapp(texto, number):
-    mensaje = {
+    data = {
         "messaging_product": "whatsapp",    
         "recipient_type": "individual",
         "to": number,
@@ -98,13 +98,13 @@ def enviar_mensajes_whatsapp(texto, number):
     }
 
     if "hola" in texto:
-        mensaje["text"]["body"] = "Hola, ¿Cómo estás? Bienvenido, soy Laura tu asistente."
+        data["text"]["body"] = "Hola, ¿Cómo estás? Bienvenido, soy Laura tu asistente."
     elif "1" in texto:
-        mensaje["text"]["body"] = "Tenemos diferentes Escuelas: Automatización, Acuicultura de Precisión, Agricultura de Precisión."
+        data["text"]["body"] = "Tenemos diferentes Escuelas: Automatización, Acuicultura de Precisión, Agricultura de Precisión."
     elif "2" in texto:
-        mensaje["text"]["body"] = "Ofrecemos asesorías en tesis, metagenómica y procesos de producción."
+        data["text"]["body"] = "Ofrecemos asesorías en tesis, metagenómica y procesos de producción."
     elif "3" in texto:
-        mensaje = {
+        data = {
             "messaging_product": "whatsapp",
             "recipient_type": "individual",
             "to": number,
@@ -122,7 +122,7 @@ def enviar_mensajes_whatsapp(texto, number):
 
     connection = http.client.HTTPSConnection("graph.facebook.com")
     try:
-        connection.request("POST", "/v22.0/567813309755555/messages", json.dumps(mensaje), headers)
+        connection.request("POST", "/v22.0/567813309755555/messages", json.dumps(data), headers)
         response = connection.getresponse()
         if response.status != 200:
             agregar_mensajes_log(f"ERROR WhatsApp: {response.status} {response.reason}")
